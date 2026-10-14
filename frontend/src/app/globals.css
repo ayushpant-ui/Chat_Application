@@ -1,26 +1,131 @@
+/* src/app/globals.css */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ---------- THEMES ---------- */
+:root,
+[data-theme="light"] {
+  --t-app: #f9fafb;
+  --t-surface: #ffffff;
+  --t-subtle: #f3f4f6;
+  --t-line: #e5e7eb;
+  --t-fg: #111827;
+  --t-muted: #6b7280;
+  --t-primary: #2563eb;
+  --t-primary-hover: #1d4ed8;
+  --t-on-primary: #ffffff;
+  --t-soft: #eff6ff;
 }
 
+[data-theme="dark"] {
+  color-scheme: dark;
+  --t-app: #0b1220;
+  --t-surface: #111a2e;
+  --t-subtle: #1a2540;
+  --t-line: #26334f;
+  --t-fg: #e5e7eb;
+  --t-muted: #94a3b8;
+  --t-primary: #6366f1;
+  --t-primary-hover: #4f46e5;
+  --t-on-primary: #ffffff;
+  --t-soft: #1e2a4a;
+}
+
+[data-theme="ocean"] {
+  --t-app: #ecfeff;
+  --t-surface: #ffffff;
+  --t-subtle: #e0f7fa;
+  --t-line: #bfe9f0;
+  --t-fg: #083344;
+  --t-muted: #4b7c8a;
+  --t-primary: #0891b2;
+  --t-primary-hover: #0e7490;
+  --t-on-primary: #ffffff;
+  --t-soft: #cffafe;
+}
+
+[data-theme="forest"] {
+  color-scheme: dark;
+  --t-app: #0c1a14;
+  --t-surface: #12261c;
+  --t-subtle: #1a3326;
+  --t-line: #24432f;
+  --t-fg: #e7f5ec;
+  --t-muted: #8fb5a0;
+  --t-primary: #22c55e;
+  --t-primary-hover: #16a34a;
+  --t-on-primary: #052e16;
+  --t-soft: #17382a;
+}
+
+[data-theme="sunset"] {
+  --t-app: #fff7ed;
+  --t-surface: #ffffff;
+  --t-subtle: #ffedd5;
+  --t-line: #fed7aa;
+  --t-fg: #431407;
+  --t-muted: #9a6b55;
+  --t-primary: #f97316;
+  --t-primary-hover: #ea580c;
+  --t-on-primary: #ffffff;
+  --t-soft: #ffedd5;
+}
+
+/* ---------- TAILWIND TOKENS ---------- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-app: var(--t-app);
+  --color-surface: var(--t-surface);
+  --color-subtle: var(--t-subtle);
+  --color-line: var(--t-line);
+  --color-fg: var(--t-fg);
+  --color-muted: var(--t-muted);
+  --color-primary: var(--t-primary);
+  --color-primary-hover: var(--t-primary-hover);
+  --color-on-primary: var(--t-on-primary);
+  --color-soft: var(--t-soft);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ---------- ANIMATIONS ---------- */
+@theme {
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-blob: blob 14s ease-in-out infinite;
+  --animate-shake: shake 0.4s ease-in-out;
+  --animate-pop: pop 0.25s ease-out;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  @keyframes blob {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(40px, -30px) scale(1.1); }
+    66% { transform: translate(-30px, 30px) scale(0.95); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(0.95) translateY(-4px); }
+    to { opacity: 1; transform: none; }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  body {
+    background: var(--t-app);
+    color: var(--t-fg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
