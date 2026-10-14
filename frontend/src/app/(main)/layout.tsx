@@ -1,10 +1,7 @@
-import { ReactNode } from 'react';
-import AuthGuard from '@/components/auth/AuthGuard';
-
-export default function MainLayout({ children }: { children: ReactNode }) {
+function Loading() {
   return (
-    <AuthGuard mode="private">
-      <div className="flex h-screen">{children}</div>
-    </AuthGuard>
+    <div className="flex min-h-screen items-center justify-center bg-app">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-line border-t-primary" />
+    </div>
   );
 }
