@@ -1,7 +1,7 @@
-function Loading() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-app">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-line border-t-primary" />
-    </div>
-  );
+
+import { ReactNode } from 'react';
+import ChatShell from '@/components/chat/ChatShell';
+
+export default function ChatLayout({ children }: { children: ReactNode }) {
+  return <ChatShell>{children}</ChatShell>;
 }
