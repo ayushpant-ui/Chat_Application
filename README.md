@@ -1,3 +1,4 @@
+# [Currently Working on it ]
 # Chat Application 💬
 
 A real-time chat application built with Next.js and NestJS that enables users to communicate through private messaging. It uses PostgreSQL and Prisma for data management, JWT for authentication, and WebSockets for instant message delivery.
