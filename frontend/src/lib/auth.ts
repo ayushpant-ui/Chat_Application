@@ -1,4 +1,4 @@
-// src/lib/auth.ts
+
 import { api } from './api';
 import type { AuthResponse } from '@/types';
 
