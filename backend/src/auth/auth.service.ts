@@ -1,15 +1,17 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable,UnauthorizedException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { hash } from 'bcrypt';
+import * as bcrypt from 'bcrypt'
 import { PrismaService } from '@/prisma/prisma.service.js';
 import { RegisterDto } from './dto/register.dto.js';
+import { JwtService } from '@nestjs/jwt';
+import {LoginDto} from './dto/login.dto.js';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService,private readonly jwtService: JwtService) {}
 
   async register(data: RegisterDto) {
-    const hashedPassword = await hash(data.password, 12);
+    const hashedPassword = await bcrypt.hash(data.password, 12);
 
     try {
       await this.prisma.user.create({
@@ -28,4 +30,64 @@ export class AuthService {
 
     return { message: 'Account created' };
   }
+
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    const isValid = user && (await bcrypt.compare(dto.password, user.password));
+    if (!user || !isValid) {
+      throw new UnauthorizedException('Invalid email or password');
+    }
+
+    const accessToken = await this.jwtService.signAsync({ sub: user.id });
+
+    return {
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+      },
+    };
+  }
 }
+//   async login(dto:LoginDto) {
+
+//        const d = await this.prisma.user.findUnique({
+//             where: {
+//                 email : dto.email,
+//             },
+//         })
+
+//         if(!d){
+//             throw new Error ('Invalid Email or Password');
+//         }
+
+//         const checkpassword =await bcrypt.compare(
+//             dto.password,
+//             d.password
+//         )
+
+//         if(!checkpassword){
+//             throw new Error ('Invalid Email or Password');
+//         }
+
+//         const payload = {
+//             id : d.id ,
+//             username: d.username
+//         }
+//         const accesstoken = this.jwtService.sign(payload);
+
+//         return{
+//             accesstoken,
+//             body:{
+//                 id : d.id, 
+//                 uesrname : d.username
+//             }
+//         }
+//     }
+
+// }
