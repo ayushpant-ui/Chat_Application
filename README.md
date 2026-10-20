@@ -1,6 +1,14 @@
 # [Currently Working on it ]
 # Chat Application 💬
 
+<p align="center">
+  <img
+    src="./frontend/public/images/ChatApp-Demo.png"
+    alt="Engineering College Management System Homepage"
+    width="100%"
+  />
+</p>
+
 A real-time chat application built with Next.js and NestJS that enables users to communicate through private messaging. It uses PostgreSQL and Prisma for data management, JWT for authentication, and WebSockets for instant message delivery.
 
 ## 🚀 Features
