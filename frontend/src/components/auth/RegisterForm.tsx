@@ -1,174 +1,229 @@
-// src/components/auth/RegisterForm.tsx
-'use client';
+"use client";
 
-import { FormEvent, useState } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Mail, Lock, User } from 'lucide-react';
-import { Input } from '@/components/ui/Input';
-import SubmitButton from '@/components/ui/SubmitButton';
-import { register } from '@/lib/auth';
-import { getErrorMessage } from '@/lib/api';
-import { useAuthStore } from '@/store/auth.store';
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Mail, Lock, User } from "lucide-react";
 
-const delay = (ms: number) => ({ animationDelay: `${ms}ms` });
+import { Input } from "@/components/ui/Input";
+import SubmitButton from "@/components/ui/SubmitButton";
+import { register as registerUser } from "@/lib/auth";
+import { getErrorMessage } from "@/lib/api";
+import { useAuthStore } from "@/store/auth.store";
 
-const BAR_COLORS = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500'];
-const LABELS = ['Weak', 'Fair', 'Good', 'Strong'];
+// 1. Define validation rules with Zod
+const registerSchema = z
+  .object({
+    email: z.string().trim().email("Enter a valid email"),
 
-function getStrength(pw: string) {
-  if (!pw) return 0;
-  let s = 0;
-  if (pw.length >= 8) s++;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
-  if (/\d/.test(pw)) s++;
-  if (/[^A-Za-z0-9]/.test(pw)) s++;
-  return Math.max(s, 1);
+    username: z
+      .string()
+      .regex(
+        /^[a-zA-Z0-9_]{3,20}$/,
+        "3-20 characters: letters, numbers, underscore",
+      ),
+
+    password: z
+      .string()
+      .min(8, "At least 8 characters")
+      .max(128, "Password must not exceed 128 characters"),
+
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+// 2. Derive the TypeScript type from the schema
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+const delay = (ms: number) => ({
+  animationDelay: `${ms}ms`,
+});
+
+const BAR_COLORS = [
+  "bg-red-500",
+  "bg-orange-500",
+  "bg-yellow-500",
+  "bg-green-500",
+];
+
+const LABELS = ["Weak", "Fair", "Good", "Strong"];
+
+// 3. Calculate password strength
+function getStrength(password: string) {
+  if (!password) return 0;
+
+  let strength = 0;
+
+  if (password.length >= 8) strength++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+  if (/\d/.test(password)) strength++;
+  if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+  return Math.max(strength, 1);
 }
 
 export default function RegisterForm() {
   const router = useRouter();
-  const setAuth = useAuthStore((s) => s.setAuth);
 
-  const [form, setForm] = useState({
-    email: '',
-    username: '',
-    password: '',
-    confirmPassword: '',
+  const setAuth = useAuthStore((state) => state.setAuth);
+
+  const [serverError, setServerError] = useState("");
+
+  // 4. Initialize React Hook Form
+  const {
+    register: registerField,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+
+    defaultValues: {
+      email: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
+    },
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [serverError, setServerError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const strength = getStrength(form.password);
+  // 5. Watch the password field for the strength indicator
+  const password = watch("password");
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const strength = getStrength(password);
 
-  const validate = () => {
-    const e: Record<string, string> = {};
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Enter a valid email';
-    if (!/^[a-zA-Z0-9_]{3,20}$/.test(form.username))
-      e.username = '3-20 characters: letters, numbers, underscore';
-    if (form.password.length < 8) e.password = 'At least 8 characters';
-    if (form.password !== form.confirmPassword)
-      e.confirmPassword = 'Passwords do not match';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
+  // 6. Submit valid form data to the backend
+ const onSubmit = async (data: RegisterFormData) => {
+  setServerError("");
 
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setServerError('');
-    if (!validate()) return;
+  try {
+    const { email, username, password } = data;
 
-    setLoading(true);
-    try {
-      const { email, username, password } = form;
-      const { user, accessToken } = await register({ email, username, password });
-      setAuth(user, accessToken);
-      router.replace('/chat');
-    } catch (err) {
-      setServerError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Make a single registration API request
+    const { user, accessToken } = await registerUser({
+      email,
+      username,
+      password,
+    });
+
+    // Save the authenticated user and access token
+    setAuth(user, accessToken);
+
+    // Navigate to the chat page
+    router.replace("/chat");
+  } catch (error) {
+    setServerError(getErrorMessage(error));
+  }
+};
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4" noValidate>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {serverError && (
         <div
           key={serverError}
+          role="alert"
           className="animate-shake rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-500"
         >
           {serverError}
         </div>
       )}
 
+      {/* Email */}
       <div className="animate-fade-up" style={delay(100)}>
         <Input
           id="email"
-          name="email"
           type="email"
           label="Email"
           icon={<Mail size={18} />}
           placeholder="you@example.com"
           autoComplete="email"
-          value={form.email}
-          onChange={onChange}
-          error={errors.email}
+          error={errors.email?.message}
+          {...registerField("email")}
         />
       </div>
 
+      {/* Username */}
       <div className="animate-fade-up" style={delay(180)}>
         <Input
           id="username"
-          name="username"
           label="Username"
           icon={<User size={18} />}
           placeholder="your_username"
           autoComplete="username"
-          value={form.username}
-          onChange={onChange}
-          error={errors.username}
+          error={errors.username?.message}
+          {...registerField("username")}
         />
       </div>
 
+      {/* Password */}
       <div className="animate-fade-up" style={delay(260)}>
         <Input
           id="password"
-          name="password"
           type="password"
           label="Password"
           icon={<Lock size={18} />}
           placeholder="At least 8 characters"
           autoComplete="new-password"
-          value={form.password}
-          onChange={onChange}
-          error={errors.password}
+          error={errors.password?.message}
+          {...registerField("password")}
         />
-        {form.password && (
+
+        {password && (
           <div className="mt-2 flex items-center gap-2">
             <div className="flex flex-1 gap-1">
-              {[0, 1, 2, 3].map((i) => (
+              {[0, 1, 2, 3].map((index) => (
                 <div
-                  key={i}
+                  key={index}
                   className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                    i < strength ? BAR_COLORS[strength - 1] : 'bg-subtle'
+                    index < strength ? BAR_COLORS[strength - 1] : "bg-subtle"
                   }`}
                 />
               ))}
             </div>
-            <span className="w-12 text-right text-xs text-muted">{LABELS[strength - 1]}</span>
+
+            <span className="w-12 text-right text-xs text-muted">
+              {LABELS[strength - 1]}
+            </span>
           </div>
         )}
       </div>
 
+      {/* Confirm Password */}
       <div className="animate-fade-up" style={delay(340)}>
         <Input
           id="confirmPassword"
-          name="confirmPassword"
           type="password"
           label="Confirm password"
           icon={<Lock size={18} />}
           placeholder="Repeat your password"
           autoComplete="new-password"
-          value={form.confirmPassword}
-          onChange={onChange}
-          error={errors.confirmPassword}
+          error={errors.confirmPassword?.message}
+          {...registerField("confirmPassword")}
         />
       </div>
 
+      {/* Submit */}
       <div className="animate-fade-up pt-1" style={delay(420)}>
-        <SubmitButton loading={loading} loadingText="Creating account...">
+        <SubmitButton loading={isSubmitting} loadingText="Creating account...">
           Create account
         </SubmitButton>
       </div>
 
-      <p className="animate-fade-up text-center text-sm text-muted" style={delay(500)}>
-        Already have an account?{' '}
-        <Link href="/login" className="font-semibold text-primary hover:underline">
+      {/* Login link */}
+      <p
+        className="animate-fade-up text-center text-sm text-muted"
+        style={delay(500)}
+      >
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-semibold text-primary hover:underline"
+        >
           Sign in
         </Link>
       </p>
