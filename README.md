@@ -1,53 +1,153 @@
-# [Currently Working on it ]
-# Chat Application 💬
+<h1 align="center">Chat Application 💬</h1>
 
 <p align="center">
-  <img
-    src="./frontend/public/images/ChatApp-Demo.png"
-    alt="Engineering College Management System Homepage"
-    width="100%"
-  />
+  A real-time private messaging app built with Next.js, NestJS, PostgreSQL and WebSockets.
 </p>
 
-A real-time chat application built with Next.js and NestJS that enables users to communicate through private messaging. It uses PostgreSQL and Prisma for data management, JWT for authentication, and WebSockets for instant message delivery.
+<p align="center">
+  <img alt="Status" src="https://img.shields.io/badge/status-in%20development-orange" />
+  <img alt="Next.js" src="https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white" />
+  <img alt="NestJS" src="https://img.shields.io/badge/NestJS-E0234E?logo=nestjs&logoColor=white" />
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white" />
+  <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?logo=tailwindcss&logoColor=white" />
+  <img alt="Socket.IO" src="https://img.shields.io/badge/Socket.IO-010101?logo=socketdotio&logoColor=white" />
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white" />
+  <img alt="Prisma" src="https://img.shields.io/badge/Prisma-2D3748?logo=prisma&logoColor=white" />
+</p>
 
-## 🚀 Features
+---
 
-- User registration and login
-- Secure authentication using JWT
-- Real-time messaging using WebSockets
-- Private conversations between users
-- Message history and conversation management
-- Online/offline user status
-- Typing indicators
-- Responsive user interface
+<p align="center">
+  <img src="./frontend/public/images/ChatApp-Demo.png" alt="Chat application demo" width="100%" />
+</p>
 
-## 🛠️ Tech Stack
+---
 
-**Frontend**
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
+## Overview
 
-**Backend**
-- NestJS
-- Node.js
-- TypeScript
-- REST APIs
-- Socket.IO
+This application lets registered users hold private, one-to-one conversations that are delivered instantly over WebSockets. Accounts are protected with JWT authentication, and users, conversations and messages are stored in PostgreSQL through Prisma.
 
-**Database & Authentication**
+## Features and Status
+
+✅ Done &nbsp;·&nbsp; 🚧 In progress &nbsp;·&nbsp; 📋 Planned
+
+| Feature | Status |
+| --- | :---: |
+| Responsive chat interface | 🚧 |
+| User registration and login pages | 🚧 |
+| Secure authentication with JWT | 📋 |
+| Private one-to-one conversations | 📋 |
+| Real-time messaging with WebSockets | 📋 |
+| Message history and conversation management | 📋 |
+| Online / offline status | 📋 |
+| Typing indicators | 📋 |
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+| --- | --- | --- |
+| **Frontend** | Next.js | Framework and routing |
+| | React | UI components |
+| | TypeScript | Type safety |
+| | Tailwind CSS | Styling and theming |
+| **Backend** | NestJS (Node.js) | Modular server application |
+| | TypeScript | Type safety |
+| | REST APIs | Authentication and data endpoints |
+| | Socket.IO | Real-time messaging |
+| **Database** | PostgreSQL | Relational data store |
+| | Prisma ORM | Type-safe queries and migrations |
+| **Authentication** | JSON Web Tokens (JWT) | Stateless user authentication |
+| **Tools** | Git and GitHub | Version control |
+| | Postman | API testing |
+| | pgAdmin | Database management |
+
+## Architecture
+
+The application follows a client-server architecture.
+
+```mermaid
+flowchart LR
+    Client["Next.js client"] -- "REST (auth, history)" --> API
+    Client <-- "WebSocket (live messages)" --> Gateway
+
+    subgraph Backend["NestJS backend"]
+        API["REST API"]
+        Gateway["Socket.IO gateway"]
+    end
+
+    API --> DB[("PostgreSQL via Prisma")]
+    Gateway --> DB
+```
+
+1. **Frontend:** Next.js provides the user interface.
+2. **Backend:** NestJS handles business logic, authentication and API requests.
+3. **Database:** PostgreSQL stores users, conversations and messages.
+4. **ORM:** Prisma manages communication between the backend and the database.
+5. **Real-time layer:** Socket.IO delivers messages instantly between connected users.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20 or later
 - PostgreSQL
-- Prisma ORM
-- JSON Web Tokens (JWT)
+- npm and Git
 
-**Development Tools**
-- Git and GitHub
-- Postman
-- pgAdmin
+### 1. Clone the repository
 
-## 📁 Project Structure
+```bash
+git clone <your-repository-url>
+cd ChatApp
+```
+
+### 2. Backend
+
+Create a database named `chatapp_db` in PostgreSQL, then:
+
+```bash
+cd backend
+npm install
+```
+
+Create `backend/.env`:
+
+```env
+DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/chatapp_db"
+JWT_SECRET="replace-with-a-long-random-secret"
+PORT=5000
+```
+
+Run the migrations and start the server:
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+npm run start:dev
+```
+
+### 3. Frontend
+
+In a new terminal:
+
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL="http://localhost:3001"
+<!-- NEXT_PUBLIC_SOCKET_URL="http://localhost:5000" -->
+```
+
+```bash
+npm run dev
+```
+
+Open the address printed by Next.js (for example `http://localhost:3001`).
+
+## Project Structure
 
 ```text
 ChatApp/
@@ -59,88 +159,7 @@ ChatApp/
 └── README.md
 ```
 
-<!-- ## ⚙️ Prerequisites
-
-Before running the application, ensure you have installed:
-
-- Node.js
-- npm
-- PostgreSQL
-- Git -->
-
-<!-- ## 📦 Installation
-
-### 1. Clone the Repository
-
-```bash
-git clone <your-repository-url>
-cd ChatApp
-```
-
-### 2. Set Up the Backend
-
-```bash
-cd backend
-npm install
-```
-
-Create a `.env` file inside the `backend` directory:
-
-```env
-DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/chatapp_db"
-JWT_SECRET="your-secret-key"
-PORT=5000
-```
-
-Replace the database credentials with your local PostgreSQL configuration.
-
-Create the database named `chatapp_db` in PostgreSQL before running the application.
-
-Configure Prisma according to the version installed in your project, then run the required database migrations.
-
-Start the backend:
-
-```bash
-npm run start:dev
-```
-
-### 3. Set Up the Frontend
-
-Open a new terminal:
-
-```bash
-cd frontend
-npm install
-```
-
-Create a `.env.local` file inside the `frontend` directory:
-
-```env
-NEXT_PUBLIC_API_URL="http://localhost:5000/api"
-NEXT_PUBLIC_SOCKET_URL="http://localhost:5000"
-```
-
-Start the frontend:
-
-```bash
-npm run dev
-```
-
-Open your browser and visit:
-
-http://localhost:3001 -->
-
-## 🔌 Application Architecture
-
-The application follows a client-server architecture.
-
-1. **Frontend:** Next.js provides the user interface.
-2. **Backend:** NestJS handles business logic, authentication, and API requests.
-3. **Database:** PostgreSQL stores users, conversations, and messages.
-4. **ORM:** Prisma manages communication between the backend and database.
-5. **Real-Time Communication:** Socket.IO enables instant messaging between connected users.
-
-## 🔮 Future Improvements
+## Future Improvements
 
 - Group conversations
 - Image and file sharing
@@ -149,10 +168,10 @@ The application follows a client-server architecture.
 - Message editing and deletion
 - End-to-end encryption
 
-## 👨‍💻 Author
+## Author
 
-Ayush Pant
+**Ayush Pant**
 
-## 📄 License
+## License
 
 This project is developed for educational purposes and practical learning in full-stack and backend engineering.
