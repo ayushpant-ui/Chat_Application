@@ -1,10 +1,10 @@
-// src/components/chat/ConversationList.tsx
 'use client';
 
 import { useMemo } from 'react';
 import { useChatStore } from '@/store/chat.store';
 import ThemeSwitcher from '@/components/ui/ThemeSwitcher';
 import ConversationItem from './ConversationItem';
+import UserFooter from './UserFooter';
 
 export default function ConversationList() {
   const conversations = useChatStore((s) => s.conversations);
@@ -37,6 +37,7 @@ export default function ConversationList() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
+        <UserFooter />
         {items.length === 0 && (
           <p className="p-4 text-center text-sm text-muted">No conversations found</p>
         )}
