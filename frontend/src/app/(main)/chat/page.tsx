@@ -1,4 +1,3 @@
-
 export default function ChatPage() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-2 text-muted">

@@ -1,4 +1,3 @@
-// src/app/layout.tsx  (keep any font setup you already have)
 import "./globals.css";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
