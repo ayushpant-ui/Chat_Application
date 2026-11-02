@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { Post,Body,Patch,Req } from '@nestjs/common';
-import { PasswordDTO, UsernameDTO } from './dto/users.dto.js';
+import { PasswordDTO, ProfileDTO, UsernameDTO } from './dto/users.dto.js';
 
 @Controller('users')
 export class UsersController {
@@ -9,7 +9,7 @@ export class UsersController {
     constructor(private readonly usersService:UsersService){}
 
     @Patch('change-password')
-    async changepassword(
+    async changePassword(
          @Req() req:{user:{sub:string}},
          @Body() data:PasswordDTO,
     ){
@@ -18,11 +18,19 @@ export class UsersController {
     }
 
     @Patch('change-username')
-    async changeusername(
+    async changeUsername(
     @Req() req:{user:{sub:string}},
     @Body() data:UsernameDTO)
     {
         const id = req.user.sub;
         return await this.usersService.updateUsername(id,data);
+    }
+
+    @Patch('change-profile')
+    async changeProfile(@Req() req:{user:{
+        sub:string
+    }},@Body() data:ProfileDTO){
+        const id = req.user.sub;
+        return this.usersService.updateImage(id,data)
     }
 }
