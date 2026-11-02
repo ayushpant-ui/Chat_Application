@@ -1,53 +1,118 @@
 import { PrismaService } from '@/prisma/prisma.service.js';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException,ConflictException } from '@nestjs/common';
 import { PasswordDTO, ProfileDTO, UsernameDTO } from './dto/users.dto.js';
+import { Prisma } from '@prisma/client';
 
-import * as bcrypt from 'bcrypt'
-
-
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
+  constructor(private readonly prisma: PrismaService) {}
 
-constructor(private readonly prisma:PrismaService){}
+  async updatePassword(userId: string, data: PasswordDTO) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
 
-
-async updatePassword(userId:string  , data:PasswordDTO){
-const user = await this.prisma.user.findUnique({
-    where : {
-        id : userId
+    if (!user) {
+      throw new NotFoundException('User Not Found');
     }
-})
 
-if(!user){
-    throw new NotFoundException('User Not Found')
-}
+    const checkpassword = await bcrypt.compare(
+      data.currentpassword,
+      user.password,
+    );
 
-const checkpassword = await bcrypt.compare(data.currentpassword,user.password);
-
-if(!checkpassword){
-    throw new NotFoundException('Password did not match' );
-}
-
-  await this.prisma.user.update({
-    where:{
-        id: userId
-    },
-    data:{
-        password : data.currentpassword
+    if (!checkpassword) {
+      throw new NotFoundException('Password did not match');
     }
-})
 
-return({
-    message : 'Successfully Password Changed'
-})
+    const hashpass = await bcrypt.hash(data.newpassword,12);
 
-}
-async updateImage(data:ProfileDTO){
+    await this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: hashpass,
+      },
+    });
 
-}
+    return {
+      message: 'Successfully Password Changed',
+    };
+  }
+  async updateImage(userid:string ,data: ProfileDTO) {
 
-async updateUsername(data:UsernameDTO){
+    const user = await this.prisma.user.findUnique({
+        where:{
+            id:userid
+        }
+    })
 
-}
+    if (!user){
+        throw new NotFoundException('User Not Found')
+    }
+
+    const updateduser = await this.prisma.user.update(
+        {
+            where:{
+                id:userid
+            },
+            data:{
+                avatarUrl:data.avatarUrl
+            },
+            select:{
+                avatarUrl:true
+            }
+        }
+    )
+    return {
+        message:'Profile Image Updated Successfully',
+        updateduser
+    }
+  }
+
+  async updateUsername(userid: string, data: UsernameDTO) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userid,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Not Found');
+    }
+    let updateduser ;
+    try {
+      const updateduser = await this.prisma.user.update({
+        where: {
+          id: userid,
+        },
+        data: {
+          username: data.username,
+        },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('Username already exists');
+      }
+      throw error;
+    }
+
+    return {
+      message: 'Username Updated Successfully',
+      user: updateduser,
+    };
+  }
 }

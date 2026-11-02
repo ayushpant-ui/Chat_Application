@@ -32,5 +32,5 @@ export class ProfileDTO {
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  displayName?: string;
+  avatarUrl?: string;
 }
