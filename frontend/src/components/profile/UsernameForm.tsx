@@ -1,51 +1,95 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { User as UserIcon } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
 import { Input } from '@/components/ui/Input';
 import SubmitButton from '@/components/ui/SubmitButton';
 import Section from '@/components/ui/Section';
 import Notice from '@/components/ui/Notice';
+
 import { getErrorMessage } from '@/lib/api';
 import { updateProfile } from '@/lib/users';
 import { useAuthStore } from '@/store/auth.store';
-import type { User } from '@/types';
+import { z } from 'zod';
+// import { usernameSchema, type UsernameFormData } from '@/schemas/username.schema';
 
+import type { User } from '@/types';
+export const usernameSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3, 'Username must contain at least 3 characters')
+    .max(20, 'Username cannot exceed 20 characters')
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      'Only letters, numbers and underscores are allowed',
+    ),
+});
+
+export type UsernameFormData = z.infer<typeof usernameSchema>;
 export default function UsernameForm({ user }: { user: User }) {
   const updateUser = useAuthStore((s) => s.updateUser);
-  const [username, setUsername] = useState(user.username);
-  const [error, setError] = useState('');
+
   const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState('');
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<UsernameFormData>({
+    resolver: zodResolver(usernameSchema),
+    defaultValues: {
+      username: user.username,
+    },
+  });
+
+  const username = watch('username');
 
   const changed = username.trim() !== user.username;
 
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError('');
+  // Update the form if the user prop changes
+  useEffect(() => {
+    reset({ username: user.username });
+  }, [user.username, reset]);
+
+  const onSubmit = async (data: UsernameFormData) => {
+    setServerError('');
     setSuccess(false);
 
-    const value = username.trim();
-    if (!/^[a-zA-Z0-9_]{3,20}$/.test(value)) {
-      setError('3-20 characters: letters, numbers, underscore');
-      return;
-    }
-
-    setLoading(true);
     try {
-      updateUser(await updateProfile({ username: value }));
+      const updatedUser = await updateProfile({
+        username: data.username,
+      });
+
+      updateUser(updatedUser);
+      reset({ username: updatedUser.username });
       setSuccess(true);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      setServerError(getErrorMessage(error));
     }
   };
 
   return (
     <Section title="Account" description="How other people see you in chats.">
-      <form onSubmit={onSubmit} className="space-y-4" noValidate>
-        {success && <Notice type="success">Username updated.</Notice>}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+
+        {success && (
+          <Notice type="success">
+            Username updated successfully.
+          </Notice>
+        )}
+
+        {serverError && (
+          <Notice type="error">
+            {serverError}
+          </Notice>
+        )}
 
         <div>
           <p className="text-sm font-medium text-fg">Email</p>
@@ -54,17 +98,19 @@ export default function UsernameForm({ user }: { user: User }) {
 
         <Input
           id="username"
-          name="username"
           label="Username"
           icon={<UserIcon size={18} />}
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          error={error}
+          error={errors.username?.message}
+          {...register('username')}
           autoComplete="username"
         />
 
         <div className="sm:w-48">
-          <SubmitButton loading={loading} loadingText="Saving..." disabled={!changed}>
+          <SubmitButton
+            loading={isSubmitting}
+            loadingText="Saving..."
+            disabled={!changed || isSubmitting}
+          >
             Save changes
           </SubmitButton>
         </div>
