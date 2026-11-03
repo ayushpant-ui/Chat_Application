@@ -1,8 +1,10 @@
-import { Controller } from '@nestjs/common';
+import { Controller,UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { Post,Body,Patch,Req } from '@nestjs/common';
 import { PasswordDTO, ProfileDTO, UsernameDTO } from './dto/users.dto.js';
+import { AuthGuard } from './roles.guard.js';
 
+@UseGuards(AuthGuard)
 @Controller('users')
 export class UsersController {
 
