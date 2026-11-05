@@ -19,13 +19,13 @@ export class PasswordDTO {
   @IsNotEmpty()
   @MinLength(8)
   @MaxLength(128)
-  currentpassword!: string;
+  currentPassword!: string;
 
 @IsString()
   @IsNotEmpty()
   @MinLength(8)
   @MaxLength(128)
-  newpassword!: string;
+  newPassword!: string;
 }
 
 export class ProfileDTO {

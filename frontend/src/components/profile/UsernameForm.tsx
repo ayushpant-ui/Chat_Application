@@ -16,7 +16,7 @@ import { useAuthStore } from '@/store/auth.store';
 import { z } from 'zod';
 // import { usernameSchema, type UsernameFormData } from '@/schemas/username.schema';
 
-import type { User } from '@/types';
+import type { User } from '@/types/index';
 export const usernameSchema = z.object({
   username: z
     .string()
@@ -49,31 +49,31 @@ export default function UsernameForm({ user }: { user: User }) {
     },
   });
 
-  const username = watch('username');
+const username = watch('username') ?? '';
 
-  const changed = username.trim() !== user.username;
+const changed = username.trim() !== user.username;
 
-  // Update the form if the user prop changes
-  useEffect(() => {
-    reset({ username: user.username });
-  }, [user.username, reset]);
+useEffect(() => {
+  reset({ username: user.username ?? '' });
+}, [user.username, reset]);
 
-  const onSubmit = async (data: UsernameFormData) => {
-    setServerError('');
-    setSuccess(false);
+const onSubmit = async (data: UsernameFormData) => {
+  setServerError('');
+  setSuccess(false);
 
-    try {
-      const updatedUser = await updateProfile({
-        username: data.username,
-      });
+  try {
+    const response = await updateProfile({
+      username: data.username,
+    });
 
-      updateUser(updatedUser);
-      reset({ username: updatedUser.username });
-      setSuccess(true);
-    } catch (error) {
-      setServerError(getErrorMessage(error));
-    }
-  };
+    updateUser(response.user);
+
+    reset({ username: response.user.username });
+    setSuccess(true);
+  } catch (error) {
+    setServerError(getErrorMessage(error));
+  }
+};
 
   return (
     <Section title="Account" description="How other people see you in chats.">

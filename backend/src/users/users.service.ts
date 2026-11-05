@@ -1,5 +1,5 @@
 import { PrismaService } from '@/prisma/prisma.service.js';
-import { Injectable, NotFoundException,ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException,ConflictException,UnauthorizedException } from '@nestjs/common';
 import { PasswordDTO, ProfileDTO, UsernameDTO } from './dto/users.dto.js';
 import { Prisma } from '@prisma/client';
 
@@ -21,15 +21,15 @@ export class UsersService {
     }
 
     const checkpassword = await bcrypt.compare(
-      data.currentpassword,
+      data.currentPassword,
       user.password,
     );
 
     if (!checkpassword) {
-      throw new NotFoundException('Password did not match');
+      throw new UnauthorizedException('Password did not match');
     }
 
-    const hashpass = await bcrypt.hash(data.newpassword,12);
+    const hashpass = await bcrypt.hash(data.newPassword,12);
 
     await this.prisma.user.update({
       where: {
@@ -87,7 +87,7 @@ export class UsersService {
     }
     let updateduser ;
     try {
-      const updateduser = await this.prisma.user.update({
+       updateduser = await this.prisma.user.update({
         where: {
           id: userid,
         },

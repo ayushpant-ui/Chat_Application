@@ -2,7 +2,7 @@ import { Controller,UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service.js';
 import { Post,Body,Patch,Req } from '@nestjs/common';
 import { PasswordDTO, ProfileDTO, UsernameDTO } from './dto/users.dto.js';
-import { AuthGuard } from './roles.guard.js';
+import { AuthGuard } from './auth.guard.js';
 
 @UseGuards(AuthGuard)
 @Controller('users')
